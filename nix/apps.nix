@@ -17,22 +17,30 @@ _: {
         let
           topoPath = "${t.lab}/${t.name}.clab.yml";
 
+          # The topology lives in the read-only Nix store, so point containerlab
+          # at the working directory for its runtime lab dir (clab-<name>/).
+          labdirBase = ''export CLAB_LABDIR_BASE="''${CLAB_LABDIR_BASE:-$PWD}"'';
+
           up = pkgs.writeShellApplication {
             name = "${t.name}-up";
             text = ''
+              ${labdirBase}
               echo "Deploying ${t.name} from ${topoPath}"
+              echo "Runtime state -> $CLAB_LABDIR_BASE/clab-${t.name}"
               exec ${clab} deploy --reconfigure --topo "${topoPath}" "$@"
             '';
           };
           down = pkgs.writeShellApplication {
             name = "${t.name}-down";
             text = ''
+              ${labdirBase}
               exec ${clab} destroy --cleanup --topo "${topoPath}" "$@"
             '';
           };
           inspect = pkgs.writeShellApplication {
             name = "${t.name}-inspect";
             text = ''
+              ${labdirBase}
               exec ${clab} inspect --topo "${topoPath}" "$@"
             '';
           };

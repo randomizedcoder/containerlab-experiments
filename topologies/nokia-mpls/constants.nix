@@ -14,6 +14,22 @@ rec {
   kind = "nokia_srlinux";
   image = "ghcr.io/nokia/srlinux:latest"; # free, auto-pulled from ghcr
 
+  # NOTE: the free SR Linux container does NOT expose SR-MPLS / IGP segment
+  # routing config on any platform type (verified on ixr-d2l and ixr6e; ixr6e
+  # also crash-loops). This example is therefore BLOCKED and slated to move to
+  # Nokia SR OS (vr-sros) - see ../../README.md "Status". Kept on the stable
+  # default DC type so the nodes at least boot.
+  type = "ixr-d2l";
+
+  # Out-of-band management network. Kept off the common 172.17-172.20 ranges to
+  # avoid clashing with other local Docker networks; distinct from the Arista
+  # example so both labs can run at once.
+  mgmt = {
+    network = "clab-nokia-mgmt";
+    v4 = "172.21.20.0/24";
+    v6 = "3fff:172:21:21::/64";
+  };
+
   asn = {
     core = 65000;
     ce1 = 65001;

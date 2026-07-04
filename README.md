@@ -7,6 +7,42 @@ configs are **generated from Nix** — every address, SID, and ASN is named once
 in that example's `constants.nix` and interpolated everywhere else, so there are
 no hard-coded values in the generated artifacts.
 
+## Status (2026-07-03)
+
+The **Nix machinery is complete and working**: `nix fmt`, `nix flake check`
+(formatting + render-build of every lab, no Docker), the `-up/-down/-inspect/-gen`
+apps, and the render pipeline all pass. Deploy mechanics are proven end-to-end on
+real containers (management-subnet selection, `CLAB_LABDIR_BASE` for the
+read-only store, and SR Linux `.partial` config handling were all sorted out
+against a live run).
+
+The **two MPLS examples are blocked on licensed vendor images**:
+
+- **Arista `arista-mpls`** — needs the cEOS-lab image (free Arista account).
+  Config drafted; not yet deployed/validated.
+- **Nokia `nokia-mpls`** — was prototyped on the free **SR Linux** container, but
+  SR Linux's free build **cannot configure SR-MPLS** (no `segment-routing` /
+  `mpls` / `sid` nodes in its schema on any platform type; the `ixr6e` Jericho
+  variant also crash-loops). This example is therefore being **migrated to Nokia
+  SR OS (`vr-sros`)**, which fully supports SR-MPLS/LDP/RSVP-TE, pending a
+  licensed SR OS image.
+
+Both device NOSes require accounts/licenses that are being arranged. The SR Linux
+files remain in-tree as a reference prototype until the SR OS migration lands.
+
+### Next steps
+
+1. Obtain images: Arista cEOS-lab (import to Docker as `ceos:<ver>`) and Nokia
+   SR OS qcow2 (build a `vr-sros` container via
+   [vrnetlab](https://containerlab.dev/manual/vrnetlab/)).
+2. Deploy & validate `arista-mpls` (IS-IS/SR adjacencies over both link pairs,
+   iBGP + RFC 5549, SR-TE policies, CE↔CE ping over both AFs); fill the dynamic
+   adjacency-SIDs into the SR-TE policies.
+3. Rework `nokia-mpls` from SR Linux to `vr-sros` (new `constants.nix`/`configs.nix`
+   in SR OS syntax; the topology/render/app machinery is unchanged).
+4. Add a live-deploy smoke test once images are available (kept out of
+   `nix flake check` by design).
+
 ## The examples
 
 Both examples implement the **same logical topology** and differ only by vendor:
@@ -26,15 +62,16 @@ Both examples implement the **same logical topology** and differ only by vendor:
 - **Traffic engineering over both link pairs**: two TE tunnels from PE1 to PE2,
   one pinned to each parallel link pair.
 
-| Example                                                        | Platform        | TE mechanism   |
-| -------------------------------------------------------------- | --------------- | -------------- |
-| [`topologies/arista-mpls`](./topologies/arista-mpls/README.md) | Arista cEOS-lab | SR-TE policies |
-| [`topologies/nokia-mpls`](./topologies/nokia-mpls/README.md)   | Nokia SR Linux  | SR-TE policies |
+| Example                                                        | Platform                   | TE mechanism   | State                           |
+| -------------------------------------------------------------- | -------------------------- | -------------- | ------------------------------- |
+| [`topologies/arista-mpls`](./topologies/arista-mpls/README.md) | Arista cEOS-lab            | SR-TE policies | blocked on image                |
+| [`topologies/nokia-mpls`](./topologies/nokia-mpls/README.md)   | Nokia SR Linux → **SR OS** | SR-TE policies | migrating to SR OS (see Status) |
 
-> Both use **SR-TE**, not RSVP-TE/LDP: those are unreliable-to-absent over IPv6
-> on these containerized NOSes, and SR Linux has no classic RSVP-TE. SR-TE gives
-> the same two-path traffic engineering over an IPv6 control plane. See each
-> example's README for the per-vendor details and verification commands.
+> The examples use **SR-TE**, not RSVP-TE/LDP: those are unreliable-to-absent
+> over IPv6 on containerized cEOS, and SR Linux has no classic RSVP-TE. SR-TE
+> gives the same two-path traffic engineering over an IPv6 control plane. See
+> each example's README for per-vendor details, and the **Status** section above
+> for what currently works.
 
 ## Prerequisites
 

@@ -1,4 +1,4 @@
-# constants -> { "<node>.cfg" = "<SR Linux flat `set` config>"; ... }
+# constants -> { "<node>.partial.cfg" = "<SR Linux flat `set` config>"; ... }
 #
 # All addresses / SIDs / ASNs are interpolated from constants.nix. SR Linux does
 # not support classic RSVP-TE, so traffic engineering uses Segment Routing
@@ -130,7 +130,7 @@ let
       set / network-instance default protocols bgp neighbor ${stripMask peV6} peer-group pe'';
 in
 {
-  "ce1.cfg" = ceConfig {
+  "ce1.partial.cfg" = ceConfig {
     self = "ce1";
     edgeIf = c.edge.ce1_pe1.ce1If;
     v4 = c.edge.ce1_pe1.ce1V4;
@@ -142,7 +142,7 @@ in
     asn = c.asn.ce1;
   };
 
-  "ce2.cfg" = ceConfig {
+  "ce2.partial.cfg" = ceConfig {
     self = "ce2";
     edgeIf = c.edge.ce2_pe2.ce2If;
     v4 = c.edge.ce2_pe2.ce2V4;
@@ -154,7 +154,7 @@ in
     asn = c.asn.ce2;
   };
 
-  "pe1.cfg" = peConfig {
+  "pe1.partial.cfg" = peConfig {
     self = "pe1";
     far = "pe2";
     coreA = {
@@ -173,7 +173,7 @@ in
     ceAsn = c.asn.ce1;
   };
 
-  "pe2.cfg" = peConfig {
+  "pe2.partial.cfg" = peConfig {
     self = "pe2";
     far = "pe1";
     coreA = {
@@ -192,7 +192,7 @@ in
     ceAsn = c.asn.ce2;
   };
 
-  "p.cfg" = ''
+  "p.partial.cfg" = ''
     ${coreSystem "p"}
     ${coreLink c.core.pe1_p_a.pIf c.core.pe1_p_a.pIp}
     ${coreLink c.core.pe1_p_b.pIf c.core.pe1_p_b.pIp}

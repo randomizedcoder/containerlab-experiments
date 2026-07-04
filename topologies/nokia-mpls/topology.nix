@@ -3,19 +3,30 @@
 c: {
   name = c.labName;
 
+  mgmt = {
+    network = c.mgmt.network;
+    ipv4-subnet = c.mgmt.v4;
+    ipv6-subnet = c.mgmt.v6;
+  };
+
   topology = {
     defaults = {
       inherit (c) kind;
     };
 
-    kinds.${c.kind}.image = c.image;
+    kinds.${c.kind} = {
+      image = c.image;
+      type = c.type;
+    };
 
+    # `.partial` tells containerlab these are partial CLI configs to merge into
+    # SR Linux's factory config, not full replacements (which would revert).
     nodes = {
-      ce1.startup-config = "configs/ce1.cfg";
-      pe1.startup-config = "configs/pe1.cfg";
-      p.startup-config = "configs/p.cfg";
-      pe2.startup-config = "configs/pe2.cfg";
-      ce2.startup-config = "configs/ce2.cfg";
+      ce1.startup-config = "configs/ce1.partial.cfg";
+      pe1.startup-config = "configs/pe1.partial.cfg";
+      p.startup-config = "configs/p.partial.cfg";
+      pe2.startup-config = "configs/pe2.partial.cfg";
+      ce2.startup-config = "configs/ce2.partial.cfg";
     };
 
     links = [

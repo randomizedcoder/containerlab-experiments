@@ -2,6 +2,12 @@
 c: {
   name = c.labName;
 
+  mgmt = {
+    network = c.mgmt.network;
+    ipv4-subnet = c.mgmt.v4;
+    ipv6-subnet = c.mgmt.v6;
+  };
+
   topology = {
     defaults = {
       inherit (c) kind;

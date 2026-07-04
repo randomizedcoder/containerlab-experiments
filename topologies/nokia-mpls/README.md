@@ -1,7 +1,17 @@
 # nokia-mpls
 
-Nokia **SR Linux** implementation of the shared MPLS lab: an IPv6-only SR-MPLS
-core with a dual-stack customer edge.
+> **Status (2026-07-03): BLOCKED — migrating to Nokia SR OS.**
+> This example was prototyped on the free **SR Linux** container, but that build
+> **cannot configure SR-MPLS**: its IS-IS instance and network-instance schemas
+> have no `segment-routing` / `mpls` / `sid` config nodes on any platform type
+> (verified on `ixr-d2l` and `ixr6e`; `ixr6e` also crash-loops). SR Linux does
+> support IPv6 IS-IS, iBGP, and RFC 5549, but not the MPLS transport this lab
+> needs. It is therefore being reworked onto **Nokia SR OS (`vr-sros`)**, which
+> fully supports SR-MPLS, pending a licensed image. The files below are the
+> SR Linux prototype, kept for reference until the SR OS version lands.
+
+Nokia implementation of the shared MPLS lab: an IPv6-only SR-MPLS core with a
+dual-stack customer edge.
 
 ```
              2001:db8:0:1::/127                 2001:db8:0:3::/127

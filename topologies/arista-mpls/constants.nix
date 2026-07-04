@@ -13,6 +13,15 @@ rec {
   kind = "arista_ceos";
   image = "ceos:4.32.0F"; # imported manually into Docker (see README)
 
+  # Out-of-band management network. Kept off the common 172.17-172.20 ranges to
+  # avoid clashing with other local Docker networks; distinct from the Nokia
+  # example so both labs can run at once.
+  mgmt = {
+    network = "clab-arista-mgmt";
+    v4 = "172.22.20.0/24";
+    v6 = "3fff:172:22:22::/64";
+  };
+
   asn = {
     core = 65000; # iBGP AS shared by PE1/PE2
     ce1 = 65001;
