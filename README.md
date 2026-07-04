@@ -118,6 +118,9 @@ topologies/<name>/
   README.md
 ```
 
+See [`nix/README.md`](./nix/README.md) for how the flake and its modules fit
+together (inputs, data flow, and each module's job).
+
 Adding an example: create a `topologies/<name>/` with those three files and add
 it to the list in [`nix/topologies.nix`](./nix/topologies.nix); the apps,
 packages, and checks are generated automatically.
