@@ -7,3 +7,10 @@ result-*
 
 # Ignore NixOS interactive test driver history
 **/.nixos-test-history
+
+# containerlab runtime state and rendered labs
+clab-*/
+*-lab/
+.clab.yml.bak
+ansible-inventory.yml
+*.tar.gz
