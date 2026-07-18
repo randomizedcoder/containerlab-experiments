@@ -11,7 +11,7 @@
 rec {
   labName = "arista-mpls";
   kind = "arista_ceos";
-  image = "ceos:4.32.0F"; # imported manually into Docker (see README)
+  image = "ceos:4.36.1F"; # imported manually into Docker (see README)
 
   # Out-of-band management network. Kept off the common 172.17-172.20 ranges to
   # avoid clashing with other local Docker networks; distinct from the Nokia
@@ -108,5 +108,14 @@ rec {
     ce1V6 = "2001:db8:aaaa::/48";
     ce2V4 = "100.64.2.0/24";
     ce2V6 = "2001:db8:bbbb::/48";
+  };
+
+  # Loopback host addresses inside each advertised prefix - real, pingable
+  # endpoints so CE<->CE reachability can be tested end to end.
+  host = {
+    ce1V4 = "100.64.1.1/32";
+    ce1V6 = "2001:db8:aaaa::1/128";
+    ce2V4 = "100.64.2.1/32";
+    ce2V6 = "2001:db8:bbbb::1/128";
   };
 }

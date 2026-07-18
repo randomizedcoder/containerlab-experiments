@@ -20,6 +20,7 @@ let
     !
     service routing protocols model multi-agent
     !
+    ip routing
     ipv6 unicast-routing
     !
     mpls ip
@@ -50,7 +51,12 @@ let
       interface Loopback0
          ipv6 address ${c.loopback.${self}}/128
          isis enable CORE
-         node-segment ipv6 index ${toString c.prefixSid.${self}}
+         ! explicit-null: advertise the prefix-SID with the E-flag so the
+         ! penultimate hop swaps to the explicit-null label instead of doing
+         ! PHP. Without it, PHP leaves a bare IPv4 packet (RFC 5549 traffic) on
+         ! the IPv6-only core link, which has no IPv4 adjacency, so it is
+         ! dropped. Keeping the label to the egress PE lets it do the IP lookup.
+         node-segment ipv6 index ${toString c.prefixSid.${self}} explicit-null
       !
       interface ${coreAIf}
          no switchport
@@ -126,10 +132,18 @@ let
       v6,
       peV4,
       peV6,
+      hostV4,
+      hostV6,
       route4,
       route6,
       asn,
     }:
+    let
+      # BGP neighbor addresses must be bare IPs; the PE edge addresses carry a
+      # prefix length (e.g. 192.168.11.2/30), so strip it as the PE config does.
+      peV4Addr = builtins.head (builtins.split "/" peV4);
+      peV6Addr = builtins.head (builtins.split "/" peV6);
+    in
     ''
       ${preamble self}
       interface ${edgeIf}
@@ -137,21 +151,27 @@ let
          ip address ${v4}
          ipv6 address ${v6}
       !
+      ! Loopback host addresses inside the advertised prefixes; real endpoints
+      ! for end-to-end CE<->CE ping tests.
+      interface Loopback1
+         ip address ${hostV4}
+         ipv6 address ${hostV6}
+      !
       ip route ${route4} Null0
       ipv6 route ${route6} Null0
       !
       router bgp ${toString asn}
          router-id ${if self == "ce1" then "10.1.1.1" else "10.2.2.2"}
          no bgp default ipv4-unicast
-         neighbor ${peV4} remote-as ${toString c.asn.core}
-         neighbor ${peV6} remote-as ${toString c.asn.core}
+         neighbor ${peV4Addr} remote-as ${toString c.asn.core}
+         neighbor ${peV6Addr} remote-as ${toString c.asn.core}
          !
          address-family ipv4
-            neighbor ${peV4} activate
+            neighbor ${peV4Addr} activate
             network ${route4}
          !
          address-family ipv6
-            neighbor ${peV6} activate
+            neighbor ${peV6Addr} activate
             network ${route6}
       !
       end'';
@@ -164,6 +184,8 @@ in
     v6 = c.edge.ce1_pe1.ce1V6;
     peV4 = c.edge.ce1_pe1.pe1V4;
     peV6 = c.edge.ce1_pe1.pe1V6;
+    hostV4 = c.host.ce1V4;
+    hostV6 = c.host.ce1V6;
     route4 = c.route.ce1V4;
     route6 = c.route.ce1V6;
     asn = c.asn.ce1;
@@ -176,6 +198,8 @@ in
     v6 = c.edge.ce2_pe2.ce2V6;
     peV4 = c.edge.ce2_pe2.pe2V4;
     peV6 = c.edge.ce2_pe2.pe2V6;
+    hostV4 = c.host.ce2V4;
+    hostV6 = c.host.ce2V6;
     route4 = c.route.ce2V4;
     route6 = c.route.ce2V6;
     asn = c.asn.ce2;
@@ -223,7 +247,9 @@ in
     interface Loopback0
        ipv6 address ${c.loopback.p}/128
        isis enable CORE
-       node-segment ipv6 index ${toString c.prefixSid.p}
+       ! explicit-null for consistency with the PEs (see peConfig); harmless on
+       ! P, which is transit-only and never an egress for customer traffic.
+       node-segment ipv6 index ${toString c.prefixSid.p} explicit-null
     !
     interface ${c.core.pe1_p_a.pIf}
        no switchport

@@ -14,3 +14,8 @@ clab-*/
 .clab.yml.bak
 ansible-inventory.yml
 *.tar.gz
+
+# Vendor images and licenses — large binaries / licensed material, never commit.
+# Everything under vendor/ is ignored; see vendor/README.md (which is NOT ignored).
+/vendor/*
+!/vendor/README.md
