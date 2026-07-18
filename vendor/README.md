@@ -12,11 +12,11 @@ vendor/
 
 ## What lives here
 
-| File                                    | Purpose                                             |
-| --------------------------------------- | --------------------------------------------------- |
-| `images/cEOS64-lab-<ver>.tar`           | Arista cEOS-lab container image (import into Docker) |
-| `images/vEOS64-lab-<ver>.qcow2`         | Arista vEOS VM image (not used by the cEOS labs)     |
-| `licenses/srlinux-26.3.lic`             | Nokia SR Linux license, referenced by nokia-mpls     |
+| File                            | Purpose                                              |
+| ------------------------------- | ---------------------------------------------------- |
+| `images/cEOS64-lab-<ver>.tar`   | Arista cEOS-lab container image (import into Docker) |
+| `images/vEOS64-lab-<ver>.qcow2` | Arista vEOS VM image (not used by the cEOS labs)     |
+| `licenses/srlinux-26.3.lic`     | Nokia SR Linux license, referenced by nokia-mpls     |
 
 ## How they're used
 

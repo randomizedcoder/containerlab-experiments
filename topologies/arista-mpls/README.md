@@ -83,17 +83,17 @@ and native IPv6.
 
 ## Gotchas found while bringing this up
 
-| # | Symptom | Root cause | Fix |
-| - | ------- | ---------- | --- |
-| 1 | Data ports never bound; ~5-min boots | clab endpoints named `EthernetN`; cEOS expects kernel `ethN` | `topology.nix`: derive `ethN` from the config's `EthernetN` |
-| 2 | CE eBGP never came up | BGP neighbor addresses carried a `/30`,`/64` suffix | `configs.nix`: strip the prefix to a bare IP |
-| 3 | IPv4 wouldn't forward | no `ip routing` (only `ipv6 unicast-routing`) | `configs.nix`: add `ip routing` |
-| 4 | No pingable endpoints | customer prefixes were only null-routed | CE `Loopback1` host addresses inside each prefix |
-| 5 | IPv4 (RFC 5549) dropped in core; IPv6 fine | PHP pops the label → a bare IPv4 packet lands on an IPv6-only core link with no IPv4 adjacency | `explicit-null` on the prefix-SIDs so the penultimate hop swaps to label 2 and the egress PE does the IP lookup |
+| #   | Symptom                                    | Root cause                                                                                     | Fix                                                                                                             |
+| --- | ------------------------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| 1   | Data ports never bound; ~5-min boots       | clab endpoints named `EthernetN`; cEOS expects kernel `ethN`                                   | `topology.nix`: derive `ethN` from the config's `EthernetN`                                                     |
+| 2   | CE eBGP never came up                      | BGP neighbor addresses carried a `/30`,`/64` suffix                                            | `configs.nix`: strip the prefix to a bare IP                                                                    |
+| 3   | IPv4 wouldn't forward                      | no `ip routing` (only `ipv6 unicast-routing`)                                                  | `configs.nix`: add `ip routing`                                                                                 |
+| 4   | No pingable endpoints                      | customer prefixes were only null-routed                                                        | CE `Loopback1` host addresses inside each prefix                                                                |
+| 5   | IPv4 (RFC 5549) dropped in core; IPv6 fine | PHP pops the label → a bare IPv4 packet lands on an IPv6-only core link with no IPv4 adjacency | `explicit-null` on the prefix-SIDs so the penultimate hop swaps to label 2 and the egress PE does the IP lookup |
 
 \#5 is the interesting one — a genuine RFC-5549-over-an-IPv6-only-SR-core
 interaction, not a typo. IPv6 traffic is unaffected by PHP because the core link
-*does* have an IPv6 adjacency; only the label-less IPv4 packet has nowhere to go.
+_does_ have an IPv6 adjacency; only the label-less IPv4 packet has nowhere to go.
 
 The SR-TE policies still need each link's dynamic adjacency-SID filled in (see
 the comments in `configs.nix`).
